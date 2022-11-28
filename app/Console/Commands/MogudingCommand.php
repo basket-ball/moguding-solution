@@ -51,7 +51,7 @@ class MogudingCommand extends Command
     public function handle()
     {
         $moguding = new Moguding();
-
+        $server = new ServerChan(config('moguding.sct.key'));
         $this->info('正在登录...');
         try {
             $response = (new Client())
@@ -71,6 +71,9 @@ class MogudingCommand extends Command
             }
             $user = $data['data'];
         } catch (Exception $e) {
+            $server->title("[{$save['createTime']}] 失败！")
+                        ->desp($e->getMessage() ?? '请求超时')
+                        ->send();
             throw new Exception($e->getMessage() ?? '请求超时', $e->getCode(), $e);
         }
 
@@ -102,7 +105,6 @@ class MogudingCommand extends Command
 
         // 打卡并推送通知
         $success = 0;
-        $server = new ServerChan(config('moguding.sct.key'));
         foreach ($plans as $plan) {
             try {
                 $save = $moguding->getSaveInfo(new SaveParam(
